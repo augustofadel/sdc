@@ -3,33 +3,8 @@
 setwd("~/!filesync/repos/sdc")
 
 # carregar funcoes
-func_list <- c(
-   "agreg.R",
-   "alt_mut.R",
-   "bin_select.R",
-   "city_distance.R",
-   "cross_sbx.R",
-   "crossover_brkga.R",
-   "crossover_brkga_regen.R",
-   "crossover_brkga_resamp.R",
-   "DLD.R",
-   "find_set.R",
-   "fit.R",
-   "IL1.R",
-   "IL2.R",
-   "IL3.R",
-   "init_individual.R",
-   "init_population.R",
-   "kruskal_dc.R",
-   "microagg_brkga.R",
-   "pkgs.R",
-   "poly_mut.R",
-   "SDID.R",
-   "tour_to_path.R",
-   "tree_to_clus.R",
-   "union_ds.R"
-)
-sapply(func_list, source, echo = F, .GlobalEnv)
+func_list <- list.files(pattern = "^[^_].+\\.R$")
+sapply(func_list, source, .GlobalEnv)
 
 # carregar/instalar pacotes
 pkgs(c(
