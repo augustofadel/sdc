@@ -9,7 +9,7 @@ crossover_brkga_regen <- function(ce, cn, pr, k, iter = 100) {
    cf[va > pr] <- cn[va > pr]
    count <- tabulate(cf)
    i <- 0
-   while ((any(count < min(k)) | any(count >= 2 * max(k))) & i <= iter) {
+   while ((any(count < min(k)) | any(count >= 2 * max(k))) & i < iter) {
       i <- i + 1
       recep <- which.min(count)
       donat <- which.max(count)
