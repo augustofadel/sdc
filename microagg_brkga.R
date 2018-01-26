@@ -15,13 +15,14 @@ microagg_brkga <- function
    k_int = c(3, 4, 5, 10), 
    p_k = 50, 
    tot_ger = 500, 
-   d = "euclidean", 
+   d = 'euclidean', 
    init = 'TSP',
    multik = T,
    metricas = c('IL1'), #c('DLD', 'SDID', 'IL1', 'IL2', 'IL3')
    pe = .2, 
    pm = .15, 
    pr = .7, 
+   crossover = 'regen',
    nuc = 8
 ) {  
    
@@ -177,20 +178,56 @@ microagg_brkga <- function
          }
          cat('   _executando crossover\n')
          size_cros <- size_pop - ncol(elit) - ncol(mutant)
-         parents <- cbind(
-            sample(1:ncol(elit), size_cros, replace = T),
-            sample(1:ncol(nelit), size_cros, replace = T)
-         )
-         children <- apply(
-            parents, 1, 
-            function(x) crossover_brkga_regen(
-               ce = elit[, x[1]], 
-               cn = nelit[, x[2]], 
-               pr = pr, 
-               k = k,
-               iter = 100
+         crossover_bypass <- F
+         
+         # crossover com resampling
+         if (crossover == 'resamp') {
+            children <- matrix(0, nrow = n, ncol = size_cros)
+            cradles <- children[1,] == 0
+            n_resamp <- 0
+            while(any(cradles) & n_resamp < 100) {
+               n_resamp <- n_resamp + 1
+               parents <- cbind(
+                  sample(1:ncol(elit), sum(cradles), replace = T),
+                  sample(1:ncol(nelit), sum(cradles), replace = T)
+               )
+               children[,cradles] <- apply(
+                  parents, 1, 
+                  function(x) crossover_brkga_resamp(
+                     ce = elit[, x[1]], 
+                     cn = nelit[, x[2]], 
+                     pr = pr, 
+                     k = k
+                  )
+               )
+               cradles <- children[1,] == 0
+               # cat('Cradles=', sum(cradles), '; n_resamp=', n_resamp, '\n')
+            }
+            if (any(cradles)) {
+               crossover_bypass <- T
+               # warning('Crossover falhou com metodo resampling. Metodo de regeneracao foi utilizado.')
+               cat('   <!> Crossover falhou com metodo resampling, alternando para metodo de regeneracao.\n')
+            }
+         }
+         
+         # crossover com regeneracao de solucoes inviaveis
+         if (crossover == 'regen' | crossover_bypass) {
+            parents <- cbind(
+               sample(1:ncol(elit), size_cros, replace = T),
+               sample(1:ncol(nelit), size_cros, replace = T)
             )
-         )
+            children <- apply(
+               parents, 1, 
+               function(x) crossover_brkga_regen(
+                  ce = elit[, x[1]], 
+                  cn = nelit[, x[2]], 
+                  pr = pr, 
+                  k = k,
+                  iter = 100
+               )
+            )
+         }
+
          pop_nova <- cbind(
             children, 
             mutant
