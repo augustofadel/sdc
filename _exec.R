@@ -18,7 +18,8 @@ pkgs(c(
    'nsga2R', 
    'coop', 
    'ggplot2',
-   'sdcMicro'
+   'sdcMicro',
+   'profvis'
 ))
 
 # carregar dados
@@ -32,23 +33,25 @@ dat <- EIA[,6:15]
 
 # Execucao BRKGA ----------------------------------------------------------
 
-t <- system.time({
+p <- profvis({
    result <- microagg_brkga(
       arq = dat,                             # dataset
       k_int = c(3, 4, 5, 10),                # vetor niveis de agregacao
       p_k = 50,                              # tamanho da populacao (para cada k)
-      tot_ger = 200,                         # numero de geracoes
+      tot_ger = 50,                         # numero de geracoes
       d = 'euclidean',                       # metrica distancia
       init = 'TSP',                          # estrategia de inicializacao: TSP, MST, aleat
       multik = T,                            # T = inicializa uma unica populacao com diferentes valores de k
-      metricas = c('IL1'),                   # metrica p/ calcular fitness
+      metricas = c('IL2'),                   # metrica p/ calcular fitness
       pe = .2,                               # proporcao de solucoes elite
       pm = .15,                              # proporcao de solucoes mutantes
       pr = .7,                               # probabilidade de solucao de gene do conjunto elite
+      crossover = 'regen',                   # metodo crossover: regen = regeneracao solucoes inviaveis; resamp = resampling
       nuc = 8                                # qtd nucleos paralelizacao
    )
 })
 
+htmlwidgets::saveWidget(p, 'microagg_brkga_profile.html')
 
 # Execucao NSGA-II --------------------------------------------------------
 
