@@ -9,7 +9,8 @@ IL3 <- function(dat, dat.agreg) {
    IL[1] <-
       (abs(dat - dat.agreg) / abs(dat)) %>% 
       apply(2, sum) %>% 
-      sum() / (n * p)
+      sum() %>% 
+      `/`(n * p)
    
    dat.mean <- dat[, lapply(.SD, mean)]
    dat.agreg.mean <- dat.agreg[, lapply(.SD, mean)]
