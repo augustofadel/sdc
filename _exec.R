@@ -1,3 +1,8 @@
+# pendencias:
+# verificar se, em algum grupo, todos os objetos têm o mesmo valor para alguma variavel (sd = 0)
+
+
+
 # Inicializacao -----------------------------------------------------------
 
 setwd("~/!filesync/repos/sdc")
