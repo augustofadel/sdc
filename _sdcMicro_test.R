@@ -70,6 +70,41 @@ microaggregation(
 
 
 
+# disclosure risk:
+sdc <- microaggregation(sdc)
+# sample and population frequencies
+get.sdcMicroObj(sdc, type = "risk")$individual %>% head()
+freqCalc(
+   x = testdata,
+   keyVars = c("urbrur", "water", "sex", "age"),
+   w = "sampling_weight"
+)
+# k-anonymity
+print(sdc)
+# l-diversity
+#ldiversity(sdc)
+res1 <- ldiversity(testdata, keyVars = c("urbrur", "water", "sex", "age"), ldiv_index = "income")
+print(res1)
+# DIS SUDA score
+# SUDA2 (ignora peso amostral)
+disScore()
+suda2(sdc)
+get.sdcMicroObj(sdc, type = "risk")$suda
+#risk$suda2$score
+#risk$suda2$disScore
+#risk$suda2$contributionPercent
+# insdividual and cluster risk approach (considera pesoa mostral)
+get.sdcMicroObj(sdc, type = "risk")$individual
+# global risk
+print(sdc, "risk")
+# global risk w/ log-linear models
+sdc <- LLmodGlobalRisk(sdc, form = ~urbrur + water + sex + age)
+# 'LLmodGlobalRiskX' is deprecated. Use 'modRisk' instead.
+get.sdcMicroObj(sdc, "risk")$model$gr1
+
+
+
+
 
 
 # microagg_brkga()
