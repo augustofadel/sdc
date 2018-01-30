@@ -5,12 +5,12 @@ data("testdata", package = "sdcMicro")
 
 # define an object of class 'sdcMicroObj'
 sdc <- createSdcObj(
-   testdata,
-   keyVars = c("urbrur", "water", "sex", "age"),
-   numVars = c("expend", "income", "savings"), 
-   pramVars = "walls",
-   w = "sampling_weight", 
-   hhId = "ori_hid"
+   testdata,                                       # numeric matrix or data frame containing the data 
+   keyVars = c("urbrur", "water", "sex", "age"),   # categorical key variables
+   numVars = c("expend", "income", "savings"),     # continuous key variables
+   pramVars = "walls",                             # categorical variables considered to be pramed
+   w = "sampling_weight",                          # vector of sampling weights
+   hhId = "ori_hid"                                # cluster ID
 )
 
 slotNames(sdc)
@@ -38,35 +38,21 @@ sdc
 microaggregation(sdc)
 microaggregation(testdata[, c("expend", "income", "savings")])
 microaggregation(
-   testdata[, c("expend", "income", "savings")], 
-   variables = NULL, 
-   aggr = 3, 
-   strata_variables = NULL,
-   method = "mdav", 
-   weights = NULL, 
-   nc = 8, 
-   clustermethod = "clara",
-   measure = "mean", 
-   trim = 0, 
-   varsort = 1, 
-   transf = "log"
+   testdata[, c("expend", "income", "savings")],  # object of class sdcMicroObj-class or a data.frame
+   variables = NULL,                              # variables to microaggregate (for data.frames, all columns are chosen per default)
+   aggr = 3,                                      # aggregation level
+   strata_variables = NULL,                       # by-variables for applying microaggregation only within strata defined by the variables
+   method = "mdav",                               # pca, rmd, onedims, single, simple, clustpca, pppca, clustpppca, mdav, clustmcdpca, influence, mcdpca
+   weights = NULL,                                # sampling weights
+   nc = 8,                                        # number of cluster, if the chosen method performs cluster analysis
+   clustermethod = "clara",                       # clustermethod
+   measure = "mean",                              # aggregation statistic: mean, median, trim, onestep
+   trim = 0,                                      # trimming percentage, if measure=trim
+   varsort = 1,                                   # variable for sorting, if method=single
+   transf = "log"                                 # transformation for data x
 )
 
 
-
-# available methods:
-# pca
-# rmd
-# onedims
-# single
-# simple
-# clustpca
-# pppca
-# clustpppca
-# mdav
-# clustmcdpca
-# influence
-# mcdpca
 
 
 
@@ -118,3 +104,57 @@ dat <- Tarragona
 sol <- microagg_brkga(dat, 3, 50, 50, metricas = "IL2")
 clus <- sol[[1]][,1]
 dat_util <- fit(dat %>% as.data.table(), clus, "IL2")
+
+
+
+
+
+
+# calculo IL1
+
+# nao consegui reproduzir o calculo feito pelo pacote, armazenado no slot 'utility$il1'
+# a expressao que mais se aproxima é 
+# abs(dat - dat.agreg) %>% 
+#    `/`(2 * Sj) %>% 
+#    apply(2, sum) %>% 
+#    sum() %>% 
+#    `/`(prod(dim(dat)))
+
+sdc <- createSdcObj(
+   testdata,                                       # numeric matrix or data frame containing the data 
+   keyVars = c("urbrur", "water", "sex", "age"),   # categorical key variables
+   numVars = c("expend", "income", "savings"),     # continuous key variables
+   pramVars = "walls",                             # categorical variables considered to be pramed
+   w = "sampling_weight",                          # vector of sampling weights
+   hhId = "ori_hid"                                # cluster ID
+)
+sdc <- microaggregation(sdc, aggr = 3, method = 'mdav')
+
+dat <- testdata[, c("expend", "income", "savings")]
+dat.agreg <- sdc@manipNumVars
+
+IL2(as.data.table(dat), as.data.table(dat.agreg))
+sdc@utility$il1
+dUtility(dat, xm = dat.agreg) # armazenado no slot utility
+
+
+# dUtilityWORK(..., method = "IL1")
+x <- dat
+xm <- dat.agreg
+
+a <- x
+for (i in 1:dim(x)[2]) {
+   a[[i]] <- abs(x[[i]] - xm[[i]])/(sd(x[[i]], na.rm = TRUE) * sqrt(2))
+}
+infLoss1 <- 1/(dim(x)[2] * dim(x)[1]) * sum(a, na.rm = TRUE)
+
+
+
+Sj <- apply(dat, 2, sd)
+res <- abs(dat - dat.agreg) / (sqrt(2) * Sj)
+soma_n <- apply(res, 2, sum)
+sum(soma_n / prod(dim(dat)))
+sum(soma_n) / prod(dim(dat))
+
+
+
