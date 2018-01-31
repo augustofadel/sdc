@@ -7,8 +7,8 @@ IL3 <- function(dat, dat.agreg) {
    IL <- vector('numeric', 5L)
    
    IL[1] <-
-      (abs(dat - dat.agreg) / abs(dat)) %>% 
-      apply(2, sum) %>% 
+      abs(dat - dat.agreg) %>% 
+      `/`(abs(dat)) %>% 
       sum() %>% 
       `/`(n * p)
    
@@ -25,7 +25,8 @@ IL3 <- function(dat, dat.agreg) {
    triang.sup <- upper.tri(dat.cov, diag = T)
    
    IL[3] <- 
-      (abs(dat.cov[triang.sup] - dat.agreg.cov[triang.sup]) / abs(dat.cov[triang.sup])) %>% 
+      (abs(dat.cov[triang.sup] - dat.agreg.cov[triang.sup]) %>% 
+      `/`(abs(dat.cov[triang.sup]))) %>% 
       sum() %>% 
       `/`((p * (p + 1))/2)
    
