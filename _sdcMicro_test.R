@@ -135,7 +135,7 @@ dat.agreg <- sdc@manipNumVars
 
 IL2(as.data.table(dat), as.data.table(dat.agreg))
 sdc@utility$il1
-dUtility(dat, xm = dat.agreg) # armazenado no slot utility
+dUtility(dat, xm = dat.agreg, method = "IL1") # armazenado no slot utility
 
 
 # dUtilityWORK(..., method = "IL1")
@@ -151,10 +151,10 @@ infLoss1 <- 1/(dim(x)[2] * dim(x)[1]) * sum(a, na.rm = TRUE)
 
 
 Sj <- apply(dat, 2, sd)
-res <- abs(dat - dat.agreg) / (sqrt(2) * Sj)
-soma_n <- apply(res, 2, sum)
-sum(soma_n / prod(dim(dat)))
-sum(soma_n) / prod(dim(dat))
+res <- abs(dat - dat.agreg) 
+res <- apply(res, 1, function(x) {x / (sqrt(2) * Sj)})
+sum(res) / prod(dim(dat))
+
 
 
 
